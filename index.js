@@ -1,76 +1,48 @@
-const sharp = require("sharp")
+const sharp = require("sharp");
+const sizeOf = require('image-size');
+const fs = require('fs');
 
-const combine = `D:/Projects/image-on-image-auto/combined.png`
-const combineMiddle = `D:/Projects/image-on-image-auto/combineMiddle.jpg`
+let flow = `${__dirname}\\flow.png`;
+let logo = `${__dirname}\\logo.jpg`;
+let copiar = `${__dirname}\\noCopiar.png`;
 
-let flow = "D:/Projects/image-on-image-auto/a.png"
-let logo = `D:/Projects/image-on-image-auto/logo.jpg`
-let copiar = 'D:/Projects/image-on-image-auto/copia.png'
-
-// todo: buscar flow, logo y noCopiar en la misma carpeta de exe
-// todo: agrandar logo
-// todo: get widht and heigh from original flow
-
-const width = 4750
-const height = 2150
+const combine = `${__dirname}\\final.png`;
+const combineMiddle = `${__dirname}\\combineMiddle.jpg`;
+const noCopiarResized = `${__dirname}\\noCopiarResized.png`;
 
 try {
 
-    sharp(flow).resize(width,height).toFile(`D:/Projects/image-on-image-auto/flowRes.jpg`)
+    // Add logo
+    sharp(flow)
+    .composite([{ input: logo, gravity: 'south' }])
+    .toFile(combineMiddle);
 
-    //sharp(copiar).resize(width,height).toFile(`D:/Projects/image-on-image-auto/copiarRes.jpg`)
+    // Resize no copiar
+    setTimeout(() => {
+        sizeOf(combineMiddle, function (err, dimensions) {
+            if (err) throw new Error(err);
+            console.log(`Width: ${dimensions.width}, Height: ${dimensions.height}`);   
 
-    setTimeout(cb, 2000)
-    setTimeout(cb2, 4000)
-    setTimeout(cb3, 6000)
-    
-    
-    
+            sharp(copiar)
+            .resize(dimensions.width, dimensions.height)
+            .toFile(noCopiarResized);
+        });
+    }, 500);
 
-    
+    // Add no copiar
+    setTimeout(() => {
+        sharp(combineMiddle)
+        .composite([{ input: noCopiarResized, blend: "over" }])
+        .toFile(combine);
+    }, 1500);
 
-    //sharp(combineMiddle).composite([{ input: copiar }]).toFile(combine)
+    // Delete middle files
+    setTimeout(() => {
+        fs.unlinkSync(combineMiddle)
+        fs.unlinkSync(noCopiarResized)
+    }, 3000);
 
-    //sharp(a)
-  //.rotate(180)
-  //.flatten( { background: '#ff6600' } )
-  //.composite([{ input: copiar, gravity: 'southwest' }])
-  //.sharpen()
-  //.withMetadata()
-  //.webp( { quality: 90 } )
-  //.toFile(combine);
-
-    
 
 } catch (e) {
-    console.log(e)
+    console.log(e);
 }
-    //4750 ancho
-    //2150 alto
-    //32 bits profundidad
-    //260KB 
-
-function cb() {
-    flow = `D:/Projects/image-on-image-auto/flowRes.jpg`
-    copiar = `D:/Projects/image-on-image-auto/copia.png`
-    sharp(flow).composite([{ input: logo, gravity: 'southwest' }])
-    .toFile(combineMiddle)
-
-}
-
-function cb2() {
-    sharp(combineMiddle).resize(width,height).toFile(flow)    
-}
-
-function cb3() {
-    sharp(flow)
-    .composite([{ input: copiar, blend: "over" }])
-    .toFile(combine)
-
-}
-
-/*
-clear, source, over, in, out, atop, dest, dest-over, dest-in, dest-out, dest-atop, 
-xor, add, saturate, multiply, screen, overlay, darken, lighten, colour-dodge, 
-color-dodge, colour-burn,color-burn, hard-light, soft-light, difference, exclusion
-*/
