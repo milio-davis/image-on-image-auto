@@ -1,5 +1,7 @@
 # image-on-image-auto
 
+Put logo on top of picture. Node JS automatization.
+
 node index.js
 
 MUST HAVE FILES:
